@@ -1,0 +1,102 @@
+<div class="modal-body" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+  aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalCenterTitle">Edit Employee</h5>
+        <button type="button" class="close" data-dismiss="modal" (click)="onCancelClick()" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>    
+      <div class="modal-body">
+        <form [formGroup]="editForm" class="container">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="firstName">First Name</label>
+                <input id="firstName" placeholder="First Name" type="text" class="form-control"
+                  formControlName="firstName">
+                <ng-container *ngIf="editForm.controls['firstName'].errors as fnameError">
+                  <p *ngIf="fnameError['required']" class="text-danger">This field is required!</p>
+                </ng-container>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="lastName">Last Name</label>
+                <input id="lastName" placeholder="Last Name" type="text" class="form-control"
+                  formControlName="lastName">
+                <ng-container *ngIf="editForm.controls['lastName'].errors as lnameError">
+                  <p *ngIf="lnameError['required']" class="text-danger">This field is required!</p>
+                </ng-container>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="tz">TZ</label>
+            <input id="tz" placeholder="TZ" type="text" class="form-control" formControlName="tz">
+            <ng-container *ngIf="editForm.controls['tz'].errors as tzError">
+              <p *ngIf="tzError['required']" class="text-danger">This field is required!</p>
+              <p *ngIf="tzError['minlength'] || tzError['maxlength']" class="text-danger">This field must be 9 digits
+                long</p>
+              <p *ngIf="tzError['pattern']" class="text-danger">Enter only digits in this field</p>
+            </ng-container>
+          </div>
+          <div class="form-group">
+            <label for="startDate">Start Date</label>
+            <input id="startDate" placeholder="Start Date" type="date" class="form-control" formControlName="startDate">
+            <ng-container *ngIf="editForm.controls['startDate'].errors as startDateError">
+              <p *ngIf="startDateError['required']" class="text-danger">This field is required!</p>
+            </ng-container>
+          </div>
+          <div class="form-group">
+            <label for="birthDate">Birth Date</label>
+            <input id="birthDate" placeholder="Birth Date" type="date" class="form-control" formControlName="birthDate">
+            <ng-container *ngIf="editForm.controls['birthDate'].errors as birthDateError">
+              <p *ngIf="birthDateError['required']" class="text-danger">This field is required!</p>
+            </ng-container>
+          </div>
+          <div class="form-group">
+            <label>Gender:</label><br>
+            <div class="form-check form-check-inline">
+                <input type="radio" id="male" name="male" value="true" formControlName="male" class="form-check-input">
+                <label for="male" class="form-check-label">Male</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input type="radio" id="female" name="male" value="false" formControlName="male" class="form-check-input">
+                <label for="female" class="form-check-label">Female</label>
+            </div>
+        </div>     
+          <div class="form-group">
+            <label for="roles">Roles</label>
+            <!-- פה רציתי שלנות את הformarray לrolesArray וזה עשה לי שגיאה -->
+            <div formArrayName="roles">
+              <div *ngFor="let roleControl of this.rolesArray.controls; let i = index" >
+                <div class="role-group" [formGroupName]="i">
+                    <!-- <select id="roleId" formControlName="roleId" > -->
+                    <select id="roleId" >
+                      <option *ngFor="let role of this.roles" [value]="role.id">{{ role.name }}</option>
+                    </select>
+                  <label for="managerial{{i}}">Managerial</label>
+                  <input type="checkbox" id="managerial{{i}}" >
+                   <label for="jobStartDate{{i}}">Job Start Date</label>
+                  <input type="date" id="jobStartDate{{i}}" > 
+                  <button (click)="deleteRole(roleControl)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-backspace-fill" viewBox="0 0 16 16">
+                    <path d="M15.683 3a2 2 0 0 0-2-2h-7.08a2 2 0 0 0-1.519.698L.241 7.35a1 1 0 0 0 0 1.302l4.843 5.65A2 2 0 0 0 6.603 15h7.08a2 2 0 0 0 2-2zM5.829 5.854a.5.5 0 1 1 .707-.708l2.147 2.147 2.146-2.147a.5.5 0 1 1 .707.708L9.39 8l2.146 2.146a.5.5 0 0 1-.707.708L8.683 8.707l-2.147 2.147a.5.5 0 0 1-.707-.708L7.976 8z"/>
+                  </svg></button>
+                </div>
+              </div>
+              <button (click)="addRole()"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
+                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+              </svg></button>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="onCancelClick()" data-dismiss="modal">Close</button>
+        <button type="button" [disabled]="!editForm.valid" (click)="onSaveClick()" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
