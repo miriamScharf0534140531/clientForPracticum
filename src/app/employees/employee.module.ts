@@ -10,7 +10,6 @@ import { AddEmployeeComponent } from './add-employee/add-employee.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 
-
 @NgModule({
   declarations: [AllEmployeesComponent,AddEmployeeComponent,EditEmployeeComponent],
   imports: [

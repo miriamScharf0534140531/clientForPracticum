@@ -8,6 +8,7 @@ export class Employee{
     startDate:Date;
     birthDate:Date;
     male:boolean;
+    email:string;
     roles:RoleEmployee[];
     // public List<EmployeeRole> Roles { get; set; }
     constructor(){}

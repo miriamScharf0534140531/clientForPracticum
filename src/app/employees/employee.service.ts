@@ -1,7 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Employee } from '../../models/Employee';
-import { Role } from '../../models/Role';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -22,27 +21,29 @@ export class EmployeeService {
     return this._http.get<Employee>(`${this.apiURL}/${id}`)
   }
   updateEmployee(employee:any):Observable<any>{
-    console.log("startdatebe:",employee.startDate);
-    console.log("birthbe",employee.birthDate);
+    console.log("employeetodend:",employee);
+    // console.log("birthbe",employee.birthDate);
     //  employee.startDate = formatDateToISO(employee.startDate);
     //  employee.birthDate = formatDateToISO(employee.birthDate);
     //  employee.roles.forEach(e=>e.jobStartDate=formatDateToISO(e.jobStartDate))
-    console.log("startdateaf:",employee.startDate);
-    console.log("birthaf",employee.birthDate);
-    console.log("employeetosend",employee);
-    
+    // console.log("startdateaf:",employee.startDate);
+    // console.log("birthaf",employee.birthDate);
     
       return this._http.put<any>(`${this.apiURL}/${employee.id}`,employee);
   }
   getAllRoles(){
     return this._http.get<any>(`http://localhost:5260/api/Roles`);
   }
-  addEmployee(employee:Employee){
-    console.log("employeetoadd",employee);
+  addEmployee(employee:any){
+    // employee=formatDates(employee);
+    console.log("employeetoadddddd",employee);
     
     return this._http.post<any>(this.apiURL,employee);
   }
 }
-// function formatDateToISO(date: Date): string {
-//   return date.toISOString();
+// function formatDates(employee: any): any {
+//   employee.startDate= employee.startDate.toISOString().split('T')[0];
+//   employee.birthDate=employee.birthDate.toISOString().split('T')[0];
+//   employee.roles.forEach(e=>e.jobStartDate=e.jobStartDate.toISOString().split('T')[0])
+//   return employee;
 // }
