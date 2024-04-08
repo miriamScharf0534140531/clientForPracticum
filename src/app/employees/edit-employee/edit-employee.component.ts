@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { FormArray, FormBuilder, FormControl, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormControl, ValidatorFn, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog'
 import { EmployeeService } from '../employee.service';
 import { Employee } from '../../../models/Employee';
@@ -21,10 +21,6 @@ export class EditEmployeeComponent implements OnInit {
     public dialogRef: MatDialogRef<EditEmployeeComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) { }
-  // printFormControlInfo(controlName: string, roleControl: any) {
-  //   console.log('FormControlName:', controlName);
-  //   console.log('FormControlValue:', roleControl.value);
-  // }
   ngOnInit(): void {
     this.loadEmployeeDetails();
     this._employeeService.getAllRoles().subscribe({
@@ -35,6 +31,8 @@ export class EditEmployeeComponent implements OnInit {
         console.log("err", err);
       }
     })
+    const rolesArray = this.editForm.get('roles') as FormArray;
+    rolesArray.setValidators(this.uniqueRoleIdValidator());
   }
   editForm = this._formBuilder.group({
     firstName: ['', Validators.required],
@@ -43,9 +41,19 @@ export class EditEmployeeComponent implements OnInit {
     startDate: ['', Validators.required],
     birthDate: ['', Validators.required],
     male: ['', Validators.required],
-    email:['',Validators.pattern(/^[\w\.-]+@[\w\.-]+\.[a-zA-Z]{2,}$/)],
+    email: ['', Validators.pattern(/^[\w\.-]+@[\w\.-]+\.[a-zA-Z]{2,}$/)],
     roles: this._formBuilder.array([]),
   });
+  uniqueRoleIdValidator(): ValidatorFn {
+    return (control: AbstractControl): { [key: string]: any } | null => {
+      const rolesArray = control as FormArray;
+      var roleIds = rolesArray.controls.map((roleControl) => { return roleControl.get('roleId').value });
+      console.log("rolesid", roleIds);
+      roleIds = roleIds.filter(r => r != "");
+      const isDuplicate = roleIds.some((roleId, index) => roleIds.indexOf(roleId) !== index);
+      return isDuplicate ? { duplicateRoleId: true } : null;
+    };
+  }
   get rolesArray() {
     return this.editForm.get('roles') as FormArray;
   }
@@ -71,7 +79,7 @@ export class EditEmployeeComponent implements OnInit {
       startDate: this.employeeEdit.startDate.toString(),
       birthDate: this.employeeEdit.birthDate.toString(),
       male: this.employeeEdit.male.toString(),
-      email:this.employeeEdit.email,
+      email: this.employeeEdit.email,
       roles: this.employeeEdit.roles
     });
     this.employeeEdit.roles.forEach(role => {
@@ -81,7 +89,6 @@ export class EditEmployeeComponent implements OnInit {
         jobStartDate: new FormControl(role.jobStartDate, [Validators.required]),
       }));
     });
-    console.log("this.editform",this.editForm); 
   }
   deleteRole(role) {
     var index = this.rolesArray.controls.findIndex((control) => control.value === role.value);
@@ -100,7 +107,6 @@ export class EditEmployeeComponent implements OnInit {
   formatDates(employee: any): any {
     employee.startDate = employee.startDate.toISOString().split('T')[0];
     employee.birthDate = employee.birthDate.toISOString().split('T')[0];
-    employee.roles.forEach(e => e.jobStartDate = e.jobStartDate.toISOString().split('T')[0])
     return employee;
   }
   onCancelClick() {
@@ -108,17 +114,6 @@ export class EditEmployeeComponent implements OnInit {
   }
   onSaveClick() {
     if (this.editForm.valid) {
-      // this.editForm.controls.roles.value.forEach(role=>{
-      //   var roleEmployeeToAdd=new RoleEmployee();
-      //   roleEmployeeToAdd.id=0;
-      //   roleEmployeeToAdd.employeeId=this.employeeEdit.id;
-      //   roleEmployeeToAdd.jobStartDate=new Date(role.jobStartDate);
-      //   roleEmployeeToAdd.managerial=Boolean(role.managerial);
-      //   roleEmployeeToAdd.roleId=Number(role.roleId);
-      //   this.employeeEdit.roles=[];
-      //   this.employeeEdit.roles.push(roleEmployeeToAdd)
-      // }
-      console.log("this.editform",this.editForm);
       const updatedEmployee: Employee = {
         id: this.employeeEdit.id,
         firstName: this.editForm.value.firstName,
@@ -126,27 +121,23 @@ export class EditEmployeeComponent implements OnInit {
         tz: this.editForm.value.tz,
         startDate: new Date(this.editForm.value.startDate),
         birthDate: new Date(this.editForm.value.birthDate),
-        male:this.editForm.value.male==="true",
-        email:this.editForm.value.email,
+        male: this.editForm.value.male === "true",
+        email: this.editForm.value.email,
         roles: []
       };
-      console.log("updateEmployee",updatedEmployee);
       this.editForm.value.roles.forEach(role => {
         var employeeRoleToAdd = new RoleEmployee();
-        console.log("role", role);
         employeeRoleToAdd.id = 0;
-        // employeeRoleToAdd.jobStartDate=role.jobStartDate;
-        // const employeeRoleToAdd:RoleEmployee={
-        //   id:0,
-        //   jobStartDate:role.jobStartDate,
-        //   roleId: role.roleId,
-        // }
-        // this.roles.push(employeeRoleToAdd)
+        employeeRoleToAdd.jobStartDate = role["jobStartDate"];
+        employeeRoleToAdd.managerial = role["managerial"];
+        employeeRoleToAdd.roleId = role["roleId"];
+        employeeRoleToAdd.employeeId = 0;
+        updatedEmployee.roles.push(employeeRoleToAdd);
       })
-      console.log("updatedEmployee", updatedEmployee);
       this._employeeService.updateEmployee(this.formatDates(updatedEmployee)).subscribe({
         next: (res) => {
           console.log(res);
+          window.location.reload();
         },
         error: err => {
           console.log(err);
